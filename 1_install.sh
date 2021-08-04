@@ -66,7 +66,7 @@ yes | mkswap /dev/vg0/swap
 swapon /dev/vg0/swap
 
 echo "Installing Arch Linux"
-yes '' | pacstrap /mnt base base-devel efibootmgr linux linux-headers linux-lts linux-lts-headers linux-firmware lvm2 device-mapper dosfstools e2fsprogs $cpu_microcode cryptsetup networkmanager wget man-db man-pages nano diffutils flatpak lm_sensors
+yes '' | pacstrap /mnt base base-devel efibootmgr linux linux-headers linux-lts linux-lts-headers linux-firmware lvm2 device-mapper dosfstools e2fsprogs $cpu_microcode cryptsetup networkmanager wget man-db man-pages nano diffutils  lm_sensors
 
 echo "Generating fstab"
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -107,7 +107,7 @@ bootctl --path=/boot install
 mkdir -p /boot/loader/
 tee -a /boot/loader/loader.conf << END
 default arch.conf
-timeout 2
+timeout 5
 console-mode max
 editor no
 END
@@ -148,7 +148,7 @@ END
 
 echo "Setting swappiness to 20"
 touch /etc/sysctl.d/99-swappiness.conf
-echo 'vm.swappiness=20' > /etc/sysctl.d/99-swappiness.conf
+echo 'vm.swappiness=0' > /etc/sysctl.d/99-swappiness.conf
 
 echo "Enabling periodic TRIM"
 systemctl enable fstrim.timer
