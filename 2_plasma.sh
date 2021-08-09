@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "Downloading and running base script"
-wget https://raw.githubusercontent.com/exah-io/arch-linux/master/2_base.sh
+https://raw.githubusercontent.com/ptr1337/arch-linux/master/2_base.sh
 chmod +x 2_base.sh
 sh ./2_base.sh
 
