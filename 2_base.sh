@@ -48,12 +48,12 @@ makepkg -si --noconfirm
 cd ..
 rm -rf paru-bin
 
-echo "Installing nvidia"
-git clone https://aur.archlinux.org/nvidia-dkms-performance.git
-cd nvidia-dkms-performance
-makepkg -si --noconfirm
-cd ..
-rm -rf nvidia-dkms-performance
+#echo "Installing nvidia"
+#git clone https://aur.archlinux.org/nvidia-dkms-performance.git
+#cd nvidia-dkms-performance
+#makepkg -si --noconfirm
+#cd ..
+#rm -rf nvidia-dkms-performance
 
 echo "Installing and configuring Plymouth"
 paru -S --noconfirm plymouth
