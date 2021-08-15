@@ -148,7 +148,7 @@ END
 
 echo "Setting swappiness to 20"
 touch /etc/sysctl.d/99-swappiness.conf
-echo 'vm.swappiness=0' > /etc/sysctl.d/99-swappiness.conf
+echo 'vm.swappiness=10' > /etc/sysctl.d/99-swappiness.conf
 
 echo "Enabling periodic TRIM"
 systemctl enable fstrim.timer
