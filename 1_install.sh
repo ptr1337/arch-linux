@@ -1,12 +1,12 @@
 #!/bin/bash
 
-encryption_passphrase=""
+#encryption_passphrase=""
 root_password=""
 user_password=""
 hostname=""
 username=""
 continent_city=""
-swap_size="8" # same as ram if using hibernation, otherwise minimum of 8
+#swap_size="8" # same as ram if using hibernation, otherwise minimum of 8
 
 # Set different microcode, kernel params and initramfs modules according to CPU vendor
 cpu_vendor=$(cat /proc/cpuinfo | grep vendor | uniq)
@@ -37,33 +37,30 @@ echo "Creating partition tables"
 printf "n\n1\n4096\n+512M\nef00\nw\ny\n" | gdisk /dev/nvme0n1
 printf "n\n2\n\n\n8e00\nw\ny\n" | gdisk /dev/nvme0n1
 
-echo "Setting up cryptographic volume"
-mkdir -p -m0700 /run/cryptsetup
-echo "$encryption_passphrase" | cryptsetup -q --align-payload=8192 -h sha512 -s 512 --use-random --type luks2 -c aes-xts-plain64 luksFormat /dev/nvme0n1p2
-echo "$encryption_passphrase" | cryptsetup luksOpen /dev/nvme0n1p2 cryptlvm
+#echo "Setting up cryptographic volume"
+#mkdir -p -m0700 /run/cryptsetup
+#echo "$encryption_passphrase" | cryptsetup -q --align-payload=8192 -h sha512 -s 512 --use-random --type luks2 -c aes-xts-plain64 luksFormat /dev/nvme0n1p2
+#echo "$encryption_passphrase" | cryptsetup luksOpen /dev/nvme0n1p2 cryptlvm
 
-echo "Creating physical volume"
-pvcreate /dev/mapper/cryptlvm
+#echo "Creating physical volume"
+#pvcreate /dev/mapper/cryptlvm
 
-echo "Creating volume volume"
-vgcreate vg0 /dev/mapper/cryptlvm
+#echo "Creating volume volume"
+#vgcreate vg0 /dev/mapper/cryptlvm
 
-echo "Creating logical volumes"
-lvcreate -L +"$swap_size"GB vg0 -n swap
-lvcreate -l +100%FREE vg0 -n root
+#echo "Creating logical volumes"
+#lvcreate -L +"$swap_size"GB vg0 -n swap
+#lvcreate -l +100%FREE vg0 -n root
 
 echo "Setting up / partition"
-yes | mkfs.ext4 /dev/vg0/root
-mount /dev/vg0/root /mnt
+yes | mkfs.xfs /dev/nvme0n1p2
+mount /dev/nvme0n1p2 /mnt
 
 echo "Setting up /boot partition"
 yes | mkfs.fat -F32 /dev/nvme0n1p1
 mkdir /mnt/boot
 mount /dev/nvme0n1p1 /mnt/boot
 
-echo "Setting up swap"
-yes | mkswap /dev/vg0/swap
-swapon /dev/vg0/swap
 
 echo "Installing Arch Linux"
 yes '' | pacstrap /mnt base base-devel openssh efibootmgr linux-zen linux-zen-headers linux-lts linux-lts-headers linux-firmware lvm2 device-mapper dosfstools e2fsprogs $cpu_microcode cryptsetup networkmanager wget man-db man-pages nano diffutils  lm_sensors git fish nano curl 
@@ -97,8 +94,8 @@ useradd -m -G wheel,video -s /bin/bash $username
 echo -en "$user_password\n$user_password" | passwd $username
 
 echo "Generating initramfs"
-sed -i 's/^HOOKS.*/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/' /etc/mkinitcpio.conf
-sed -i 's/^MODULES.*/MODULES=(ext4 $initramfs_modules)/' /etc/mkinitcpio.conf
+sed -i 's/^HOOKS.*/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block filesystems fsck)/' /etc/mkinitcpio.conf
+sed -i 's/^MODULES.*/MODULES=(xfs $initramfs_modules)/' /etc/mkinitcpio.conf
 mkinitcpio -P
 
 echo "Setting up systemd-boot"
