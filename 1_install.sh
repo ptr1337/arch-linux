@@ -34,8 +34,8 @@ echo "Wiping drive"
 sgdisk --zap-all /dev/nvme0n1
 
 echo "Creating partition tables"
-printf "n\n1\n4096\n+512M\nef00\nw\ny\n" | gdisk /dev/nvme0n1
-printf "n\n2\n\n\n8e00\nw\ny\n" | gdisk /dev/nvme0n1
+printf "n\n1\n4096\n+512M\nef00\nw\ny\n" | gdisk /dev/nvme0n1p1
+printf "n\n2\n\n\n8e00\nw\ny\n" | gdisk /dev/nvme0n1p2
 
 #echo "Setting up cryptographic volume"
 #mkdir -p -m0700 /run/cryptsetup
@@ -116,7 +116,7 @@ title Arch Linux
 linux /vmlinuz-linux-zen
 initrd /$cpu_microcode.img
 initrd /initramfs-linux-zen.img
-options rd.luks.name=$(blkid -s UUID -o value /dev/nvme0n1p2)=cryptlvm root=/dev/vg0/root resume=/dev/vg0/swap rd.luks.options=discard$kernel_options nmi_watchdog=0 quiet rw
+options root=$(blkid -s UUID -o value /dev/nvme0n1p2) options nmi_watchdog=0 quiet rw
 END
 
 touch /boot/loader/entries/arch-lts.conf
@@ -125,7 +125,7 @@ title Arch Linux LTS
 linux /vmlinuz-linux-lts
 initrd /$cpu_microcode.img
 initrd /initramfs-linux-lts.img
-options rd.luks.name=$(blkid -s UUID -o value /dev/nvme0n1p2)=cryptlvm root=/dev/vg0/root resume=/dev/vg0/swap rd.luks.options=discard$kernel_options nmi_watchdog=0 quiet rw
+options root=$(blkid -s UUID -o value /dev/nvme0n1p2) options nmi_watchdog=0 quiet rw
 END
 
 echo "Setting up Pacman hook for automatic systemd-boot updates"
