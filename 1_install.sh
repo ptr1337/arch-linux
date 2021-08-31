@@ -6,7 +6,7 @@ user_password=""
 hostname=""
 username=""
 continent_city=""
-swap_size="16" # same as ram if using hibernation, otherwise minimum of 8
+swap_size="8" # same as ram if using hibernation, otherwise minimum of 8
 
 # Set different microcode, kernel params and initramfs modules according to CPU vendor
 cpu_vendor=$(cat /proc/cpuinfo | grep vendor | uniq)
@@ -66,7 +66,7 @@ yes | mkswap /dev/vg0/swap
 swapon /dev/vg0/swap
 
 echo "Installing Arch Linux"
-yes '' | pacstrap /mnt base base-devel efibootmgr linux linux-headers linux-lts linux-lts-headers linux-firmware lvm2 device-mapper dosfstools e2fsprogs $cpu_microcode cryptsetup networkmanager wget man-db man-pages nano diffutils  lm_sensors
+yes '' | pacstrap /mnt base base-devel openssh efibootmgr linux-zen linux-zen-headers linux-lts linux-lts-headers linux-firmware lvm2 device-mapper dosfstools e2fsprogs $cpu_microcode cryptsetup networkmanager wget man-db man-pages nano diffutils  lm_sensors git fish nano curl 
 
 echo "Generating fstab"
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -107,7 +107,7 @@ bootctl --path=/boot install
 mkdir -p /boot/loader/
 tee -a /boot/loader/loader.conf << END
 default arch.conf
-timeout 5
+timeout 10
 console-mode max
 editor no
 END
@@ -116,9 +116,9 @@ mkdir -p /boot/loader/entries/
 touch /boot/loader/entries/arch.conf
 tee -a /boot/loader/entries/arch.conf << END
 title Arch Linux
-linux /vmlinuz-linux
+linux /vmlinuz-linux-zen
 initrd /$cpu_microcode.img
-initrd /initramfs-linux.img
+initrd /initramfs-linux-zen.img
 options rd.luks.name=$(blkid -s UUID -o value /dev/nvme0n1p2)=cryptlvm root=/dev/vg0/root resume=/dev/vg0/swap rd.luks.options=discard$kernel_options nmi_watchdog=0 quiet rw
 END
 
@@ -152,7 +152,7 @@ echo 'vm.swappiness=10' > /etc/sysctl.d/99-swappiness.conf
 
 echo "Enabling periodic TRIM"
 systemctl enable fstrim.timer
-
+systemctl enable sshd.service
 echo "Enabling NetworkManager"
 systemctl enable NetworkManager
 
