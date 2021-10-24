@@ -8,6 +8,9 @@ username=$(whoami)
 #echo "Adding multilib support"
 sudo sed -i "/\[multilib\]/,/Include/"'s/^#//' /etc/pacman.conf
 
+wget https://mirror.cachyos.org/cachyos-repo.tar.xz
+tar xvf cachyos-repo.tar.xz
+sudo ./cachyos-repo.sh
 echo "Syncing repos and updating packages"
 sudo pacman -Syu --noconfirm
 
@@ -37,7 +40,7 @@ sudo pacman -S --noconfirm ttf-roboto ttf-roboto-mono ttf-droid ttf-opensans ttf
 echo "Set environment variables and alias"
 touch ~/.bashrc
 tee -a ~/.bashrc << EOF
-alias upa="sudo rm -f /var/lib/pacman/db.lck && sudo pacman -Syu && paru -Syu --aur && flatpak update && fwupdmgr refresh && fwupdmgr update"
+alias upa="sudo rm -f /var/lib/pacman/db.lck && sudo pacman -Syu && paru -Syu --aur"
 export TERM=xterm
 EOF
 
@@ -48,6 +51,7 @@ makepkg -si --noconfirm
 cd ..
 rm -rf paru-bin
 
+sudo pacman -S --noconfirm nvidia nvidia-utils nvid-dkms
 #echo "Installing nvidia"
 #git clone https://aur.archlinux.org/nvidia-dkms-performance.git
 #cd nvidia-dkms-performance
