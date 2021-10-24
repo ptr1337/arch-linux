@@ -51,7 +51,7 @@ makepkg -si --noconfirm
 cd ..
 rm -rf paru-bin
 
-sudo pacman -S --noconfirm nvidia nvidia-utils nvid-dkms
+sudo pacman -S --noconfirm nvidia nvidia-utils nvidia-dkms
 #echo "Installing nvidia"
 #git clone https://aur.archlinux.org/nvidia-dkms-performance.git
 #cd nvidia-dkms-performance
