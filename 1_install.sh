@@ -25,7 +25,7 @@ then
 fi
 
 echo "Updating system clock"
-timedatectl set-ntp true
+timedatectl set-ntp false
 
 echo "Syncing packages database"
 pacman -Sy --noconfirm
@@ -34,12 +34,12 @@ echo "Wiping drive"
 sgdisk --zap-all /dev/nvme0n1
 
 echo "Creating partition tables"
-printf "n\n1\n4096\n+512M\nef00\nw\ny\n" | gdisk /dev/nvme0n1
+printf "n\n1\n4096\n+1024\nef00\nw\ny\n" | gdisk /dev/nvme0n1
 printf "n\n2\n\n\n8e00\nw\ny\n" | gdisk /dev/nvme0n1
 
 echo "Setting up cryptographic volume"
 mkdir -p -m0700 /run/cryptsetup
-echo "$encryption_passphrase" | cryptsetup -q --align-payload=8192 -h sha512 -s 512 --use-random --type luks2 -c aes-xts-plain64 luksFormat /dev/nvme0n1p2
+echo "$encryption_passphrase" | cryptsetup -q --align-payload=8192 -h sha512 -s 1024 --use-random --type luks2 -c aes-xts-plain64 luksFormat /dev/nvme0n1p2
 echo "$encryption_passphrase" | cryptsetup luksOpen /dev/nvme0n1p2 cryptlvm
 
 echo "Creating physical volume"
@@ -53,7 +53,7 @@ lvcreate -L +"$swap_size"GB vg0 -n swap
 lvcreate -l +100%FREE vg0 -n root
 
 echo "Setting up / partition"
-yes | mkfs.ext4 /dev/vg0/root
+yes | mkfs.xfs /dev/vg0/root
 mount /dev/vg0/root /mnt
 
 echo "Setting up /boot partition"
@@ -66,7 +66,7 @@ yes | mkswap /dev/vg0/swap
 swapon /dev/vg0/swap
 
 echo "Installing Arch Linux"
-yes '' | pacstrap /mnt base base-devel efibootmgr linux linux-headers linux-lts linux-lts-headers linux-firmware lvm2 device-mapper dosfstools e2fsprogs $cpu_microcode cryptsetup networkmanager wget man-db man-pages nano diffutils flatpak lm_sensors
+yes '' | pacstrap /mnt base base-devel efibootmgr linux  linux-lts linux-lts-headers linux-firmware lvm2 device-mapper dosfstools e2fsprogs $cpu_microcode cryptsetup networkmanager wget man-db man-pages nano diffutils flatpak lm_sensors
 
 echo "Generating fstab"
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -84,7 +84,7 @@ echo "LANG=en_US.UTF-8" >> /etc/locale.conf
 locale-gen
 
 echo "Adding persistent keymap"
-echo "KEYMAP=us" > /etc/vconsole.conf
+echo "KEYMAP=de" > /etc/vconsole.conf
 
 echo "Setting hostname"
 echo $hostname > /etc/hostname
@@ -98,7 +98,7 @@ echo -en "$user_password\n$user_password" | passwd $username
 
 echo "Generating initramfs"
 sed -i 's/^HOOKS.*/HOOKS=(base systemd autodetect keyboard sd-vconsole modconf block sd-encrypt lvm2 filesystems fsck)/' /etc/mkinitcpio.conf
-sed -i 's/^MODULES.*/MODULES=(ext4 $initramfs_modules)/' /etc/mkinitcpio.conf
+sed -i 's/^MODULES.*/MODULES=( $initramfs_modules)/' /etc/mkinitcpio.conf
 mkinitcpio -P
 
 echo "Setting up systemd-boot"
@@ -107,7 +107,7 @@ bootctl --path=/boot install
 mkdir -p /boot/loader/
 tee -a /boot/loader/loader.conf << END
 default arch.conf
-timeout 2
+timeout 10
 console-mode max
 editor no
 END
